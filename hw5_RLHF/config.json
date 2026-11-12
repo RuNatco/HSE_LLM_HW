@@ -1,0 +1,130 @@
+{
+  "data": {
+    "revision": "6bda777c88d21e5a204703c1ee45597a8fa4f734",
+    "seed": 42,
+    "validation_fraction": 0.1,
+    "max_prompt_tokens": 3072,
+    "output_dir": "data/prepared"
+  },
+  "common": {
+    "model": "Qwen/Qwen3.5-2B",
+    "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "data_dir": "data/prepared",
+    "min_free_disk_gib": 20,
+    "validation_examples": 32,
+    "validation_steps": 15,
+    "validation_max_new_tokens": 1024,
+    "lora": {
+      "r": 16,
+      "lora_alpha": 32,
+      "lora_dropout": 0.0,
+      "bias": "none",
+      "task_type": "CAUSAL_LM",
+      "target_modules": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ]
+    },
+    "training": {
+      "seed": 42,
+      "data_seed": 42,
+      "bf16": true,
+      "max_steps": 30,
+      "learning_rate": 5e-06,
+      "lr_scheduler_type": "cosine",
+      "warmup_ratio": 0.05,
+      "optim": "adamw_torch",
+      "weight_decay": 0.0,
+      "max_grad_norm": 1.0,
+      "per_device_train_batch_size": 1,
+      "gradient_accumulation_steps": 8,
+      "num_generations": 4,
+      "num_iterations": 1,
+      "max_completion_length": 512,
+      "temperature": 0.8,
+      "top_p": 0.95,
+      "top_k": 0,
+      "beta": 0.02,
+      "epsilon": 0.2,
+      "importance_sampling_level": "token",
+      "mask_truncated_completions": true,
+      "gradient_checkpointing": true,
+      "gradient_checkpointing_kwargs": {
+        "use_reentrant": false
+      },
+      "use_vllm": true,
+      "vllm_mode": "colocate",
+      "vllm_gpu_memory_utilization": 0.25,
+      "vllm_max_model_length": 4096,
+      "vllm_tensor_parallel_size": 1,
+      "vllm_enable_sleep_mode": true,
+      "remove_unused_columns": false,
+      "logging_steps": 1,
+      "save_strategy": "no",
+      "eval_strategy": "no",
+      "report_to": "none"
+    }
+  },
+  "experiments": {
+    "pilot": {
+      "validation_examples": 8,
+      "validation_steps": 10,
+      "name": "pilot",
+      "output_dir": "runs/pilot",
+      "reward": "strict",
+      "hypothesis": "Строгая награда улучшит полное совпадение вызовов, но может давать мало групп с ненулевым advantage.",
+      "pilot": true,
+      "training": {
+        "max_steps": 10,
+        "loss_type": "grpo",
+        "scale_rewards": "group"
+      }
+    },
+    "rl1_grpo_strict": {
+      "name": "rl1_grpo_strict",
+      "output_dir": "runs/rl1_grpo_strict",
+      "reward": "strict",
+      "hypothesis": "Строгая награда улучшит полное совпадение вызовов, но может давать мало групп с ненулевым advantage.",
+      "training": {
+        "loss_type": "grpo",
+        "scale_rewards": "group"
+      }
+    },
+    "rl2_grpo_shaped": {
+      "name": "rl2_grpo_shaped",
+      "output_dir": "runs/rl2_grpo_shaped",
+      "reward": "shaped",
+      "hypothesis": "Частичные баллы за функции и аргументы дадут более частый обучающий сигнал, чем строгая награда.",
+      "training": {
+        "loss_type": "grpo",
+        "scale_rewards": "group"
+      }
+    },
+    "rl3_drgrpo_shaped": {
+      "name": "rl3_drgrpo_shaped",
+      "output_dir": "runs/rl3_drgrpo_shaped",
+      "reward": "shaped",
+      "hypothesis": "Две нормировки Dr. GRPO изменят влияние длины ответов и разброса наград; сравнение проводится с RL-2.",
+      "training": {
+        "loss_type": "dr_grpo",
+        "scale_rewards": "none"
+      }
+    },
+    "rl2_grpo_shaped_90": {
+      "name": "rl2_grpo_shaped_90",
+      "output_dir": "runs/rl2_grpo_shaped_90",
+      "reward": "shaped",
+      "hypothesis": "Проверить влияние увеличения бюджета с 30 до 90 шагов.",
+      "training": {
+        "loss_type": "grpo",
+        "scale_rewards": "group",
+        "max_steps": 90
+      }
+    }
+  }
+}
